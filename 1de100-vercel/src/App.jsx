@@ -734,12 +734,182 @@ function BadgesScreen({ state }) {
 }
 
 // ═══════════════════════════════════════════════════
+// ─── ONBOARDING ───
+// ═══════════════════════════════════════════════════
+const ONBOARDING_SLIDES = [
+  {
+    icon: "self_improvement",
+    tagline: "UNA FILOSOFÍA",
+    title: "Un cuerpo en forma,\nuna mente en calma\ny una casa llena\nde amor.",
+    body: "El deporte no va de abdominales ni de récords. Va de cuidarte para poder cuidar a los tuyos. Va de sentirte vivo. De llegar al final del día sabiendo que te has movido, que has hecho algo por ti.",
+    accent: COLORS.primaryContainer,
+  },
+  {
+    icon: "bolt",
+    tagline: "LA IDEA",
+    title: "100 movimientos.\nCada día.\nSin excusas.",
+    body: "No necesitas un gimnasio, ni una hora libre, ni equipamiento. Solo mover el cuerpo 100 veces al día. Sentadillas esperando el café. Flexiones antes de la ducha. Zancadas por el pasillo. Cada movimiento cuenta.",
+    accent: COLORS.secondary,
+  },
+  {
+    icon: "phone_iphone",
+    tagline: "INSTÁLALA",
+    title: "Tu reto,\nen tu bolsillo.",
+    body: null, // Custom content for install instructions
+    accent: COLORS.tertiaryContainer,
+    isInstallSlide: true,
+  },
+];
+
+function OnboardingScreen({ onComplete }) {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slide = ONBOARDING_SLIDES[currentSlide];
+  const isLast = currentSlide === ONBOARDING_SLIDES.length - 1;
+
+  const handleNext = () => {
+    if (isLast) {
+      onComplete();
+    } else {
+      setCurrentSlide((s) => s + 1);
+    }
+  };
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 200, background: COLORS.surface,
+      display: "flex", flexDirection: "column", overflow: "hidden",
+    }}>
+      {/* Background glow */}
+      <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <div style={{
+          position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)",
+          width: 400, height: 400, background: `${slide.accent}10`, borderRadius: "50%",
+          filter: "blur(120px)", transition: "background 0.6s ease",
+        }} />
+      </div>
+
+      {/* Content */}
+      <div style={{
+        flex: 1, display: "flex", flexDirection: "column", justifyContent: "center",
+        padding: "60px 32px 32px", position: "relative", zIndex: 10, maxWidth: 440, margin: "0 auto", width: "100%",
+      }}>
+        {/* Icon */}
+        <div style={{
+          width: 80, height: 80, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+          background: COLORS.surfaceContainer, marginBottom: 32,
+          boxShadow: `0 0 40px ${slide.accent}20`,
+          border: `1px solid ${slide.accent}30`,
+        }}>
+          <Icon name={slide.icon} filled size={40} style={{ color: slide.accent }} />
+        </div>
+
+        {/* Tag */}
+        <span style={{
+          fontFamily: "'Be Vietnam Pro'", fontSize: 10, fontWeight: 700,
+          textTransform: "uppercase", letterSpacing: "0.25em",
+          color: slide.accent, marginBottom: 16,
+        }}>{slide.tagline}</span>
+
+        {/* Title */}
+        <h1 style={{
+          fontFamily: "'Space Grotesk'", fontSize: 36, fontWeight: 700,
+          lineHeight: 1.15, letterSpacing: "-0.03em", margin: "0 0 24px",
+          whiteSpace: "pre-line", color: COLORS.onSurface,
+        }}>{slide.title}</h1>
+
+        {/* Body */}
+        {slide.isInstallSlide ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {isIOS ? (
+              <div style={{ background: COLORS.surfaceContainerLow, borderRadius: 16, padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                  <Icon name="ios_share" size={24} style={{ color: COLORS.primary }} />
+                  <span style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: 16 }}>En Safari:</span>
+                </div>
+                <p style={{ fontFamily: "'Manrope'", fontSize: 15, color: COLORS.onSurfaceVariant, lineHeight: 1.6, margin: 0 }}>
+                  Pulsa el botón de compartir <span style={{ color: COLORS.onSurface }}>↑</span> y selecciona <span style={{ color: COLORS.onSurface, fontWeight: 600 }}>"Añadir a pantalla de inicio"</span>.
+                </p>
+              </div>
+            ) : isAndroid ? (
+              <div style={{ background: COLORS.surfaceContainerLow, borderRadius: 16, padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                  <Icon name="more_vert" size={24} style={{ color: COLORS.primary }} />
+                  <span style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: 16 }}>En Chrome:</span>
+                </div>
+                <p style={{ fontFamily: "'Manrope'", fontSize: 15, color: COLORS.onSurfaceVariant, lineHeight: 1.6, margin: 0 }}>
+                  Pulsa el menú <span style={{ color: COLORS.onSurface }}>⋮</span> y selecciona <span style={{ color: COLORS.onSurface, fontWeight: 600 }}>"Añadir a pantalla de inicio"</span>.
+                </p>
+              </div>
+            ) : (
+              <div style={{ background: COLORS.surfaceContainerLow, borderRadius: 16, padding: 20 }}>
+                <p style={{ fontFamily: "'Manrope'", fontSize: 15, color: COLORS.onSurfaceVariant, lineHeight: 1.6, margin: 0 }}>
+                  Abre esta web en tu móvil y añádela a la pantalla de inicio desde el menú del navegador. Se instalará como una app.
+                </p>
+              </div>
+            )}
+            <p style={{ fontFamily: "'Manrope'", fontSize: 14, color: COLORS.onSurfaceVariant, lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>
+              No necesitas App Store. Se abre como una app real, sin barra del navegador.
+            </p>
+          </div>
+        ) : (
+          <p style={{
+            fontFamily: "'Manrope'", fontSize: 17, color: COLORS.onSurfaceVariant,
+            lineHeight: 1.7, margin: 0, maxWidth: 360,
+          }}>{slide.body}</p>
+        )}
+      </div>
+
+      {/* Bottom: dots + button */}
+      <div style={{ padding: "0 32px 48px", position: "relative", zIndex: 10, maxWidth: 440, margin: "0 auto", width: "100%" }}>
+        {/* Progress dots */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 32 }}>
+          {ONBOARDING_SLIDES.map((_, i) => (
+            <div key={i} style={{
+              width: i === currentSlide ? 32 : 8, height: 8, borderRadius: 9999,
+              background: i === currentSlide ? slide.accent : COLORS.surfaceContainerHighest,
+              transition: "all 0.3s ease",
+            }} />
+          ))}
+        </div>
+
+        {/* CTA */}
+        <button onClick={handleNext} style={{
+          width: "100%", padding: 20, borderRadius: 9999, border: "none", cursor: "pointer",
+          background: isLast ? `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.primaryContainer})` : COLORS.surfaceContainer,
+          color: isLast ? COLORS.onPrimaryContainer : COLORS.onSurface,
+          fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 18,
+          boxShadow: isLast ? "0 10px 30px rgba(202,253,0,0.3)" : "none",
+          transition: "all 0.3s",
+        }}>
+          {isLast ? "Empezar mi reto" : "Siguiente"}
+        </button>
+
+        {/* Skip */}
+        {!isLast && (
+          <button onClick={onComplete} style={{
+            width: "100%", padding: 12, background: "none", border: "none", cursor: "pointer",
+            fontFamily: "'Be Vietnam Pro'", fontSize: 13, color: COLORS.outline,
+            textTransform: "uppercase", letterSpacing: "0.15em", marginTop: 8,
+          }}>Saltar</button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════
 // ─── MAIN APP ───
 // ═══════════════════════════════════════════════════
 export default function App() {
   const [screen, setScreen] = useState("dashboard");
   const [state, setState] = useState(getInitialState);
   const [achievementModal, setAchievementModal] = useState(null);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    try { return !window.sessionStorage?.getItem?.("1de100_onboarded"); } catch { return true; }
+  });
 
   const checkAchievements = useCallback((newState) => {
     const stats = {
@@ -792,20 +962,29 @@ export default function App() {
       WebkitFontSmoothing: "antialiased",
     }}>
 
-      <TopBar onBadgeClick={() => setScreen("badges")} />
+      {showOnboarding ? (
+        <OnboardingScreen onComplete={() => {
+          try { window.sessionStorage?.setItem?.("1de100_onboarded", "1"); } catch {}
+          setShowOnboarding(false);
+        }} />
+      ) : (
+        <>
+          <TopBar onBadgeClick={() => setScreen("badges")} />
 
-      {screen === "dashboard" && <DashboardScreen state={state} onNavigate={setScreen} />}
-      {screen === "activity" && <ActivityScreen state={state} onRegister={handleRegister} />}
-      {screen === "library" && <LibraryScreen />}
-      {screen === "badges" && <BadgesScreen state={state} />}
+          {screen === "dashboard" && <DashboardScreen state={state} onNavigate={setScreen} />}
+          {screen === "activity" && <ActivityScreen state={state} onRegister={handleRegister} />}
+          {screen === "library" && <LibraryScreen />}
+          {screen === "badges" && <BadgesScreen state={state} />}
 
-      <BottomNav active={screen} onNavigate={setScreen} />
+          <BottomNav active={screen} onNavigate={setScreen} />
 
-      <AchievementModal
-        badge={achievementModal}
-        level={level}
-        onClose={() => setAchievementModal(null)}
-      />
+          <AchievementModal
+            badge={achievementModal}
+            level={level}
+            onClose={() => setAchievementModal(null)}
+          />
+        </>
+      )}
     </div>
   );
 }
