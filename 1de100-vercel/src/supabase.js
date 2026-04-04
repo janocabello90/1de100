@@ -118,21 +118,17 @@ export async function getDailyPhotos(userId) {
   return { data: data || [], error };
 }
 
-// ─── Friendship helpers ───
-export async function sendFriendRequest(fromUserId, toEmail) {
-  // Find user by email via profiles — we need a lookup
-  // First find the user
-  const { data: users } = await supabase.rpc("find_user_by_email", { user_email: toEmail });
-  if (!users || users.length === 0) return { error: { message: "Usuario no encontrado" } };
-  const toUserId = users[0].id;
-  if (toUserId === fromUserId) return { error: { message: "No puedes añadirte a ti mismo" } };
-
-  const { data, error } = await supabase
-    .from("friendships")
-    .insert({ requester_id: fromUserId, addressee_id: toUserId })
-    .select()
-    .single();
-  return { data, error };
+// ─── Friendship / Invitation helpers ───
+export async function inviteFriend(inviteeEmail) {
+  // Calls the Edge Function which handles both:
+  // - existing users → creates friend request
+  // - new users → sends invitation email + auto-friends on signup
+  const { data, error } = await supabase.functions.invoke("invite-friend", {
+    body: { inviteeEmail },
+  });
+  if (error) return { data: null, error: { message: error.message || "Error al invitar" } };
+  if (data?.error) return { data: null, error: { message: data.error } };
+  return { data, error: null };
 }
 
 export async function respondFriendRequest(friendshipId, accept) {

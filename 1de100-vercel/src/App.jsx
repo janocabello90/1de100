@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { supabase, signUp, signIn, signOut, getProfile, updateProfile as updateProfileDB, uploadAvatar, logActivity, getTodayActivities as fetchTodayActivities, getActivitiesForRange, uploadDailyPhoto, getDailyPhotos, sendFriendRequest, respondFriendRequest, getFriends, getPendingRequests, createChallenge, getMyChallenges, getChallengeLeaderboard, savePushSubscription } from "./supabase";
+import { supabase, signUp, signIn, signOut, getProfile, updateProfile as updateProfileDB, uploadAvatar, logActivity, getTodayActivities as fetchTodayActivities, getActivitiesForRange, uploadDailyPhoto, getDailyPhotos, inviteFriend, respondFriendRequest, getFriends, getPendingRequests, createChallenge, getMyChallenges, getChallengeLeaderboard, savePushSubscription } from "./supabase";
 import { requestNotificationPermission, subscribeToPush, isPushSubscribed, scheduleLocalReminder } from "./pushNotifications";
 
 // ─── Design Tokens ───
@@ -656,12 +656,13 @@ function SocialScreen({ userId }) {
     if (!friendEmail.trim()) return;
     setAddingFriend(true);
     setFriendMsg(null);
-    const { error } = await sendFriendRequest(userId, friendEmail.trim());
+    const { data, error } = await inviteFriend(friendEmail.trim());
     if (error) {
-      setFriendMsg({ type: "error", text: error.message || "No se pudo enviar la solicitud" });
+      setFriendMsg({ type: "error", text: error.message || "No se pudo enviar la invitación" });
     } else {
-      setFriendMsg({ type: "success", text: "¡Solicitud enviada!" });
+      setFriendMsg({ type: "success", text: data?.message || "¡Invitación enviada!" });
       setFriendEmail("");
+      loadData(); // refresh friend list
     }
     setAddingFriend(false);
   };
@@ -725,7 +726,7 @@ function SocialScreen({ userId }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {/* Add friend */}
               <div style={{ display: "flex", gap: 8 }}>
-                <input type="email" placeholder="Email de tu amigo" value={friendEmail}
+                <input type="email" placeholder="Invitar por email" value={friendEmail}
                   onChange={(e) => setFriendEmail(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAddFriend()}
                   style={{ ...inputStyle, flex: 1 }}
@@ -735,7 +736,7 @@ function SocialScreen({ userId }) {
                   background: COLORS.primaryContainer, color: COLORS.onPrimaryContainer,
                   fontWeight: 700, fontFamily: "'Space Grotesk'", whiteSpace: "nowrap",
                 }}>
-                  {addingFriend ? "..." : "Añadir"}
+                  {addingFriend ? "..." : "Invitar"}
                 </button>
               </div>
               {friendMsg && (
@@ -793,7 +794,7 @@ function SocialScreen({ userId }) {
                   <div style={{ background: COLORS.surfaceContainerLow, borderRadius: 16, padding: 32, textAlign: "center" }}>
                     <Icon name="group_add" size={40} style={{ color: COLORS.outline, marginBottom: 12 }} />
                     <p style={{ fontFamily: "'Manrope'", fontSize: 14, color: COLORS.onSurfaceVariant, margin: 0 }}>
-                      Aún no tienes amigos. ¡Invita a alguien con su email!
+                      Aún no tienes amigos. Escribe su email arriba y les llegará una invitación para unirse.
                     </p>
                   </div>
                 ) : (

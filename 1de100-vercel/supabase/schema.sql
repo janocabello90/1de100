@@ -105,17 +105,9 @@ create table public.challenges (
 );
 
 alter table public.challenges enable row level security;
-create policy "Challenge participants can read" on public.challenges
-  for select using (
-    auth.uid() = creator_id
-    or auth.uid() in (select user_id from public.challenge_participants where challenge_id = id)
-  );
-create policy "Users can create challenges" on public.challenges
-  for insert with check (auth.uid() = creator_id);
-create policy "Creator can update challenge" on public.challenges
-  for update using (auth.uid() = creator_id);
 
 -- ─── CHALLENGE PARTICIPANTS ───
+-- (created BEFORE challenge policies because policies reference this table)
 create table public.challenge_participants (
   id uuid default uuid_generate_v4() primary key,
   challenge_id uuid references public.challenges(id) on delete cascade not null,
@@ -127,6 +119,18 @@ create table public.challenge_participants (
 );
 
 alter table public.challenge_participants enable row level security;
+
+-- Now create policies (both tables exist)
+create policy "Challenge participants can read" on public.challenges
+  for select using (
+    auth.uid() = creator_id
+    or auth.uid() in (select user_id from public.challenge_participants where challenge_id = id)
+  );
+create policy "Users can create challenges" on public.challenges
+  for insert with check (auth.uid() = creator_id);
+create policy "Creator can update challenge" on public.challenges
+  for update using (auth.uid() = creator_id);
+
 create policy "Participants can read" on public.challenge_participants
   for select using (
     auth.uid() = user_id
